@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>수행평가 현황판</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script>
+    // 5초마다 /api/assess에서 데이터 가져와서 테이블 갱신
+    async function refreshAssessments() {
+      try {
+        const res = await fetch("{{ url_for('api_assess') }}");
+        const data = await res.json();
+        const tbody = document.querySelector("#assess-body");
+        tbody.innerHTML = "";
+        data.forEach(row => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${row.subject}</td>
+            <td>${row.title}</td>
+            <td>${row.due_date || ""}</td>
+            <td>${row.detail || ""}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    setInterval(refreshAssessments, 5000); // 5초마다 갱신
+    window.addEventListener("load", refreshAssessments);
+  </script>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div>
+      <h1>수행평가 현황판</h1>
+      <div class="muted">반 친구들이 같이 보는 공용 수행평가 기록창</div>
+    </div>
+  </div>
+
+  <nav class="navbar">
+    <a href="{{ url_for('index') }}" class="nav-link">대시보드</a>
+    <a href="{{ url_for('assess') }}" class="nav-link active">수행평가</a>
+  </nav>
+
+  <div class="card">
+    <h2>새 수행평가 등록</h2>
+    <form method="post">
+      <label>과목</label>
+      <input type="text" name="subject" required>
+
+      <label>제목</label>
+      <input type="text" name="title" required>
+
+      <label>발표/제출 날짜</label>
+      <input type="date" name="due_date">
+
+      <label>내용 / 준비물 / 조 편성 등</label>
+      <textarea name="detail" rows="3"></textarea>
+
+      <button type="submit">등록</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>수행평가 목록</h2>
+    <table>
+      <thead>
+      <tr>
+        <th>과목</th>
+        <th>제목</th>
+        <th>날짜</th>
+        <th>내용</th>
+      </tr>
+      </thead>
+      <tbody id="assess-body">
+      {% for id, subject, title, due_date, detail, created_at in assessments %}
+        <tr>
+          <td>{{ subject }}</td>
+          <td>{{ title }}</td>
+          <td>{{ due_date }}</td>
+          <td>{{ detail }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    <p class="muted" style="font-size: 12px;">
+      ※ 5초마다 자동 새로고침됩니다.
+    </p>
+  </div>
+
+</div>
+</body>
+</html>

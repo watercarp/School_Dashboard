@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title> ClassNow </title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div>
+      <h1>ClassNow</h1>
+      <div class="muted">{{ today_date }} ({{ weekday }}요일)</div>
+    </div>
+    <div>
+      {% if current_period %}
+        <div><strong>지금</strong> {{ current_period }}교시</div>
+      {% else %}
+        <div><strong>지금</strong> 수업 시간 아님</div>
+      {% endif %}
+      {% if next_period %}
+        <div class="muted">다음 교시: {{ next_period }}교시</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <nav class="navbar">
+    <a href="{{ url_for('index') }}" class="nav-link active">대시보드</a>
+    <a href="{{ url_for('assess') }}" class="nav-link">수행평가</a>
+  </nav>
+
+  <!-- 오늘 시간표 -->
+  <div class="card">
+    <h2>오늘 시간표</h2>
+    {% if timetable %}
+      {% for period, subject in timetable %}
+        <div class="timetable-row">
+          <div>
+            <strong>{{ period }}교시</strong>
+            {% if current_period == period %}
+              <span class="badge badge-now">진행중</span>
+            {% elif next_period == period %}
+              <span class="badge badge-next">다음</span>
+            {% endif %}
+          </div>
+          <div>{{ subject }}</div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="muted">오늘 시간표 정보를 불러올 수 없습니다.</div>
+    {% endif %}
+  </div>
+
+  <!-- 오늘 급식 -->
+  <div class="card">
+    <h2>오늘 급식</h2>
+    {% if meal_list %}
+      <ul>
+        {% for dish in meal_list %}
+          <li>{{ dish }}</li>
+        {% endfor %}
+      </ul>
+      <div class="muted">※ () 안 숫자는 알레르기 유발 식재료 번호</div>
+    {% else %}
+      <div class="muted">오늘 급식 정보가 없습니다.</div>
+    {% endif %}
+  </div>
+
+  <!-- 이번 주 시간표 -->
+  <div class="card">
+    <h2>이번 주 시간표 (월~금)</h2>
+    {% if week_timetable %}
+      {% for day in week_timetable %}
+        <h3 style="margin-top: 12px; margin-bottom: 4px;">
+          {{ day.date }} ({{ day.weekday }}요일)
+        </h3>
+        {% if day.rows %}
+          <div style="margin-bottom: 8px; border: 1px solid #eee; border-radius: 8px; padding: 8px 10px;">
+            {% for period, subject in day.rows %}
+              <div class="timetable-row">
+                <div><strong>{{ period }}교시</strong></div>
+                <div>{{ subject }}</div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="muted" style="margin-bottom: 8px;">시간표 정보 없음</div>
+        {% endif %}
+      {% endfor %}
+    {% else %}
+      <div class="muted">이번 주 시간표 정보를 불러올 수 없습니다.</div>
+    {% endif %}
+  </div>
+
+  <!-- 이번 주 급식 -->
+  <div class="card">
+    <h2>이번 주 급식 (월~금)</h2>
+    {% if week_meals %}
+      <table>
+        <thead>
+        <tr>
+          <th>날짜</th>
+          <th>급식 메뉴</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for day in week_meals %}
+          <tr>
+            <td style="white-space: nowrap;">
+              {{ day.date }} ({{ day.weekday }}요일)
+            </td>
+            <td>
+              {% if day.dishes %}
+                <ul style="margin: 0; padding-left: 18px;">
+                  {% for dish in day.dishes %}
+                    <li>{{ dish }}</li>
+                  {% endfor %}
+                </ul>
+              {% else %}
+                <span class="muted">급식 정보 없음</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      <p class="muted" style="font-size: 12px; margin-top: 6px;">
+        ※ () 안 숫자는 알레르기 유발 식재료 번호
+      </p>
+    {% else %}
+      <div class="muted">이번 주 급식 정보를 불러올 수 없습니다.</div>
+    {% endif %}
+  </div>
+
+</div>
+</body>
+</html>
